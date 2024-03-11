@@ -62,7 +62,7 @@ class MyGame(arcade.Window):
         self.player_sprite.center_y = 96
         self.scene.add_sprite("Player", self.player_sprite)
 
-        for x in range(0, 2500, 32):
+        for x in range(0, 10000, 32):
             wall = arcade.Sprite("pixilart-drawing.jpg", TILE_SCALING)
             wall.center_x = x
             wall.center_y = 16
