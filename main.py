@@ -1,4 +1,5 @@
-import arcade
+import arcade, map_generator
+
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
 SCREEN_TITLE = "Mario Politic Miros"
@@ -10,7 +11,7 @@ PLAYER_JUMP_SPEED = 20
 COIN_SCALING = 0.25
 
 
-class MyGame(arcade.Window):
+class MyGame(arcade.Window):  # trzeba zmienic na view
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
 
@@ -21,7 +22,7 @@ class MyGame(arcade.Window):
         self.player_sprite = None
 
         # Our physics engine
-        self.physics_engine = None
+        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
 
         # A Camera that can be used for scrolling the screen
         self.camera = None
@@ -62,21 +63,16 @@ class MyGame(arcade.Window):
         self.player_sprite.center_y = 96
         self.scene.add_sprite("Player", self.player_sprite)
 
-        for x in range(0, 2500, 32):
-            wall = arcade.Sprite("pixilart-drawing.jpg", TILE_SCALING)
+        for x in range(0, 10000, 32):
+            wall = arcade.Sprite("brick.png", TILE_SCALING)
             wall.center_x = x
             wall.center_y = 16
             self.scene.add_sprite("Walls", wall)
 
-        coordinate_list = [[224, 64],[256, 64],[256, 96],[256, 128],[256, 160],[256, 192],[256, 224], [896, 64],[896, 96],[896, 128],[896, 160],[896, 192],[896, 224],[512,224],[720,224]]
+        #coordinate_list = [[224, 64], [256, 64], [256, 96], [256, 128], [256, 160], [256, 192], [256, 224], [896, 64],
+                           #[896, 96], [896, 128], [896, 160], [896, 192], [896, 224], [512, 224], [720, 224]]
 
-        for coordinate in coordinate_list:
-            wall = arcade.Sprite("pixilart-drawing.jpg", TILE_SCALING)
-            wall.position = coordinate
-            self.scene.add_sprite("Walls", wall)
-        self.physics_engine = arcade.PhysicsEnginePlatformer(
-            self.player_sprite, gravity_constant=GRAVITY, walls=self.scene["Walls"]
-        )
+        map_generator.przeszkoda1(0)
 
     def on_draw(self):
         self.clear()
