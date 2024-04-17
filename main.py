@@ -64,7 +64,11 @@ class MyGame(arcade.Window):  # trzeba zmienic na view
         self.scene.add_sprite("Player", self.player_sprite)
 
         for x in range(0, 10000, 32):
+
             wall = arcade.Sprite("brick.png", TILE_SCALING)
+
+            wall = arcade.Sprite("pixilart-drawing.jpg", TILE_SCALING)
+
             wall.center_x = x
             wall.center_y = 16
             self.scene.add_sprite("Walls", wall)
