@@ -1,15 +1,14 @@
-import arcade, map_generator
+import arcade, map_generator, time
 
-SCREEN_WIDTH = 1200
-SCREEN_HEIGHT = 800
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
 SCREEN_TITLE = "Mario Politic Miros"
 CHARACTER_SCALING = 0.20
-TILE_SCALING = 1
+TILE_SCALING = 3
 PLAYER_MOVEMENT_SPEED = 5
 GRAVITY = 1
 PLAYER_JUMP_SPEED = 20
 COIN_SCALING = 0.25
-
 
 class MyGame(arcade.Window):  # trzeba zmienic na view
     def __init__(self):
@@ -21,8 +20,10 @@ class MyGame(arcade.Window):  # trzeba zmienic na view
         # Separate variable that holds the player sprite
         self.player_sprite = None
 
+        self.wall_list = None
+
         # Our physics engine
-        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
+        self.physics_engine = None
 
         # A Camera that can be used for scrolling the screen
         self.camera = None
@@ -35,7 +36,12 @@ class MyGame(arcade.Window):  # trzeba zmienic na view
         # Keep track of the score
         self.score = 0
 
+        self.MODULE_NUMBER = 0
+
     def setup(self):
+        # sprite list
+        self.wall_list = arcade.SpriteList()
+
         # Set up the Camera
         self.camera = arcade.Camera(self.width, self.height)
 
@@ -57,27 +63,37 @@ class MyGame(arcade.Window):  # trzeba zmienic na view
             coin.center_y = 96
             self.scene.add_sprite("Coins", coin)
 
-        image_source = "mario.jpg"
-        self.player_sprite = arcade.Sprite(image_source, CHARACTER_SCALING)
+        player_image_source = "mario.jpg"
+        self.player_sprite = arcade.Sprite(player_image_source, CHARACTER_SCALING)
         self.player_sprite.center_x = 64
         self.player_sprite.center_y = 96
         self.scene.add_sprite("Player", self.player_sprite)
 
-        for x in range(0, 10000, 32):
 
-            wall = arcade.Sprite("brick.png", TILE_SCALING)
+        for i in range(1):
+            self.MODULE_NUMBER = 0
+            map_generator.przeszkoda1(self.MODULE_NUMBER, self, TILE_SCALING)
 
-            wall = arcade.Sprite("pixilart-drawing.jpg", TILE_SCALING)
+        # for x in range(0, 10000, 32):
 
-            wall.center_x = x
-            wall.center_y = 16
-            self.scene.add_sprite("Walls", wall)
+        # wall = arcade.Sprite("brick.png", TILE_SCALING)
 
-        #coordinate_list = [[224, 64], [256, 64], [256, 96], [256, 128], [256, 160], [256, 192], [256, 224], [896, 64],
-                           #[896, 96], [896, 128], [896, 160], [896, 192], [896, 224], [512, 224], [720, 224]]
+        # wall = arcade.Sprite("brick.png", TILE_SCALING)
 
-        map_generator.przeszkoda1(0)
+        # wall.center_x = x
+        # wall.center_y = 16
+        # self.scene.add_sprite("Walls", wall)
 
+        # coordinate_list = [[224, 64], [256, 64], [256, 96], [256, 128], [256, 160], [256, 192], [256, 224], [896, 64],
+        # [896, 96], [896, 128], [896, 160], [896, 192], [896, 224], [512, 224], [720, 224]]
+
+
+        # self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
+        self.physics_engine = arcade.PhysicsEnginePlatformer(self.player_sprite, gravity_constant=GRAVITY,
+                                                             walls=self.scene["Walls"])
+
+    # for wall in self.scene["Walls"]:
+    # print(wall.center_x)
     def on_draw(self):
         self.clear()
         self.camera.use()
@@ -125,6 +141,18 @@ class MyGame(arcade.Window):  # trzeba zmienic na view
 
     def on_update(self, delta_time):
         """Movement and game logic"""
+
+        if (self.player_sprite.center_x - self.scene["Walls"][0].center_x > 1000):
+            print("trzeba usunac")
+            self.scene["Walls"][0].remove_from_sprite_lists()
+        if (self.player_sprite.center_x - self.scene["Walls"][-1].center_x > -1000):
+            print("trzeba generowac")
+            self.MODULE_NUMBER += 1
+            map_generator.przeszkoda1(self.MODULE_NUMBER, self, TILE_SCALING)
+        elif (self.player_sprite.center_x - self.scene["Walls"][-1].center_x < -1000):
+            print("nie trzeba generowac")
+            print(self.player_sprite.center_x - self.scene["Walls"][-1].center_x)
+
 
         # Move the player with the physics engine
         self.physics_engine.update()
