@@ -5,10 +5,10 @@ import time
 SCREEN_WIDTH = 1024
 SCREEN_HEIGHT = 512
 SCREEN_TITLE = "Mario Politic Miros"
-CHARACTER_SCALING = 1
+CHARACTER_SCALING = 2
 TILE_SCALING = 1
 PLAYER_MOVEMENT_SPEED = 5
-GRAVITY = 1
+GRAVITY = 2
 PLAYER_JUMP_SPEED = 15
 COIN_SCALING = 1
 
@@ -24,19 +24,19 @@ class MyGame(arcade.Window):
         self.display_time = None
         self.collected_coins = []
         self.open_list = []
-
+        self.background = None
         self.scene = None
         self.player_sprite = None
         self.wall_list = None
         self.physics_engine = None
         self.camera = None
-        arcade.set_background_color(arcade.csscolor.CORNFLOWER_BLUE)
         self.gui_camera = None
         self.score = 0
         self.MODULE_NUMBER = 0
         self.paused_start_time = None
 
     def setup(self):
+        self.background = arcade.load_texture("tlo.png")
         self.wall_list = arcade.SpriteList()
         self.camera = arcade.Camera(self.width, self.height)
         self.scene = arcade.Scene()
@@ -68,6 +68,9 @@ class MyGame(arcade.Window):
 
     def on_draw(self):
         arcade.start_render()
+        arcade.draw_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2,
+                                      SCREEN_WIDTH, SCREEN_HEIGHT,
+                                      self.background)
         self.clear()
         self.camera.use()
         self.scene.draw()
@@ -144,9 +147,6 @@ class MyGame(arcade.Window):
                 self.GAME_PAUSED = False
 
     def display_image(self, image_path, display_time):
-        """
-        Wyświetla obrazek na ekranie przez określoną liczbę sekund.
-        """
         self.current_display_image = arcade.load_texture(image_path)
         self.display_time = display_time
 
@@ -158,9 +158,6 @@ class MyGame(arcade.Window):
         arcade.schedule(self.finish_display_image, self.display_time)
 
     def finish_display_image(self, delta_time):
-        """
-        Zakończa wyświetlanie obrazu i wznawia grę.
-        """
         self.clear()
         self.on_draw()
         arcade.unschedule(self.finish_display_image)
