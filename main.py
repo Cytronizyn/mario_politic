@@ -1,116 +1,81 @@
-import arcade, map_generator, time
+import arcade
+import map_generator
+import time
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1024
+SCREEN_HEIGHT = 512
 SCREEN_TITLE = "Mario Politic Miros"
-CHARACTER_SCALING = 0.20
-TILE_SCALING = 3
+CHARACTER_SCALING = 1
+TILE_SCALING = 1
 PLAYER_MOVEMENT_SPEED = 5
 GRAVITY = 1
-PLAYER_JUMP_SPEED = 20
-COIN_SCALING = 0.25
+PLAYER_JUMP_SPEED = 15
+COIN_SCALING = 1
 
-class MyGame(arcade.Window):  # trzeba zmienic na view
+
+class MyGame(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+        self.GAME_PAUSED = False
+        self.remove_msg_displayed = False
+        self.generate_msg_displayed = False
+        self.no_generate_msg_displayed = False
+        self.current_display_image = None
+        self.display_time = None
+        self.collected_coins = []
+        self.open_list = []
 
-        # Our Scene Object
         self.scene = None
-
-        # Separate variable that holds the player sprite
         self.player_sprite = None
-
         self.wall_list = None
-
-        # Our physics engine
         self.physics_engine = None
-
-        # A Camera that can be used for scrolling the screen
         self.camera = None
-
         arcade.set_background_color(arcade.csscolor.CORNFLOWER_BLUE)
-
-        # A Camera that can be used to draw GUI elements
         self.gui_camera = None
-
-        # Keep track of the score
         self.score = 0
-
         self.MODULE_NUMBER = 0
+        self.paused_start_time = None
 
     def setup(self):
-        # sprite list
         self.wall_list = arcade.SpriteList()
-
-        # Set up the Camera
         self.camera = arcade.Camera(self.width, self.height)
-
-        # Initialize Scene
         self.scene = arcade.Scene()
-
-        # Set up the GUI Camera
         self.gui_camera = arcade.Camera(self.width, self.height)
-
-        # Keep track of the score
         self.score = 0
-        # Create the Sprite lists
+
         self.scene.add_sprite_list("Player")
         self.scene.add_sprite_list("Walls", use_spatial_hash=True)
 
         for x in range(1250, 2500, 256):
-            coin = arcade.Sprite("vote.jpg", COIN_SCALING)
+            coin = arcade.Sprite("list_still.png", COIN_SCALING)
             coin.center_x = x
             coin.center_y = 96
             self.scene.add_sprite("Coins", coin)
 
-        player_image_source = "mario.jpg"
+        player_image_source = "mario.png"
         self.player_sprite = arcade.Sprite(player_image_source, CHARACTER_SCALING)
         self.player_sprite.center_x = 64
-        self.player_sprite.center_y = 96
+        self.player_sprite.center_y = 64
         self.scene.add_sprite("Player", self.player_sprite)
-
 
         for i in range(1):
             self.MODULE_NUMBER = 0
             map_generator.przeszkoda1(self.MODULE_NUMBER, self, TILE_SCALING)
 
-        # for x in range(0, 10000, 32):
-
-        # wall = arcade.Sprite("brick.png", TILE_SCALING)
-
-        # wall = arcade.Sprite("brick.png", TILE_SCALING)
-
-        # wall.center_x = x
-        # wall.center_y = 16
-        # self.scene.add_sprite("Walls", wall)
-
-        # coordinate_list = [[224, 64], [256, 64], [256, 96], [256, 128], [256, 160], [256, 192], [256, 224], [896, 64],
-        # [896, 96], [896, 128], [896, 160], [896, 192], [896, 224], [512, 224], [720, 224]]
-
-
-        # self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
         self.physics_engine = arcade.PhysicsEnginePlatformer(self.player_sprite, gravity_constant=GRAVITY,
                                                              walls=self.scene["Walls"])
+        arcade.schedule(self.on_update, 1 / 60)
 
-    # for wall in self.scene["Walls"]:
-    # print(wall.center_x)
     def on_draw(self):
+        arcade.start_render()
         self.clear()
         self.camera.use()
         self.scene.draw()
 
-        # Activate the GUI camera before drawing GUI elements
         self.gui_camera.use()
-
-        # Draw our score on the screen, scrolling it with the viewport
         score_text = f"Vote: {self.score}"
-        arcade.draw_text(
-            score_text,
-            10,
-            10,
-            arcade.csscolor.WHITE,
-            18,
-        )
+        arcade.draw_text(score_text, 10, 10, arcade.csscolor.WHITE, 18)
+        arcade.finish_render()
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.W:
@@ -130,47 +95,75 @@ class MyGame(arcade.Window):  # trzeba zmienic na view
     def center_camera_to_player(self):
         screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width / 2)
         screen_center_y = self.player_sprite.center_y - (self.camera.viewport_height / 2)
-
         if screen_center_x < 0:
             screen_center_x = 0
         if screen_center_y < 0:
             screen_center_y = 0
         player_centered = screen_center_x, screen_center_y
-
         self.camera.move_to(player_centered)
 
     def on_update(self, delta_time):
-        """Movement and game logic"""
-
-        if (self.player_sprite.center_x - self.scene["Walls"][0].center_x > 1000):
-            print("trzeba usunac")
+        if (self.player_sprite.center_x - self.scene["Walls"][0].center_x > 1024):
             self.scene["Walls"][0].remove_from_sprite_lists()
-        if (self.player_sprite.center_x - self.scene["Walls"][-1].center_x > -1000):
-            print("trzeba generowac")
+        if (self.player_sprite.center_x - self.scene["Walls"][-1].center_x > -1024):
             self.MODULE_NUMBER += 1
             map_generator.przeszkoda1(self.MODULE_NUMBER, self, TILE_SCALING)
-        elif (self.player_sprite.center_x - self.scene["Walls"][-1].center_x < -1000):
-            print("nie trzeba generowac")
+        elif (self.player_sprite.center_x - self.scene["Walls"][-1].center_x < -1024):
             print(self.player_sprite.center_x - self.scene["Walls"][-1].center_x)
 
-
-        # Move the player with the physics engine
         self.physics_engine.update()
 
-        # See if we hit any coins
-        coin_hit_list = arcade.check_for_collision_with_list(
-            self.player_sprite, self.scene["Coins"]
-        )
-
-        # Loop through each coin we hit (if any) and remove it
+        # Sprawdź kolizje z monetami i zaktualizuj obrazy monet po ich zebraniu
+        if not self.GAME_PAUSED:
+            coin_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.scene["Coins"])
+        # Sprawdź kolizje z kopertą i zatrzymaj grę na 3 sekundy, wyświetlając obraz
+        coin_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.scene["Coins"])
         for coin in coin_hit_list:
-            # Remove the coin
-            coin.remove_from_sprite_lists()
-            # Play a sound
-            self.score += 1
+            if coin not in self.collected_coins:
+                if coin not in self.open_list:
+                    self.collected_coins.append(coin)  # Dodaj monetę do listy zebranych monets
+                    self.open_list.append(coin)
+                    self.score += 1  # Zwiększ wynik
+                    self.GAME_PAUSED = True
+                    self.paused_start_time = time.time()
+                    self.display_image("list.png", 1)
+                    time.sleep(1)# Wyświetl obrazek przez 3 sekundy
 
-        # Position the camera
-        self.center_camera_to_player()
+                # Zaktualizuj obrazek zebranej monet
+                coin.texture = arcade.load_texture("list_open.png")
+                print("Zdobyłeś monetę! Twój wynik to:", self.score)
+
+        if not self.GAME_PAUSED:
+            self.physics_engine.update()
+            self.center_camera_to_player()
+
+
+        if self.GAME_PAUSED:
+            # Sprawdź, czy minęło wystarczająco czasu, aby wznowić grę
+            if time.time() - self.paused_start_time >= 3:
+                self.GAME_PAUSED = False
+
+    def display_image(self, image_path, display_time):
+        """
+        Wyświetla obrazek na ekranie przez określoną liczbę sekund.
+        """
+        self.current_display_image = arcade.load_texture(image_path)
+        self.display_time = display_time
+
+        arcade.start_render()
+        arcade.draw_texture_rectangle(self.width // 2, self.height // 2, self.current_display_image.width,
+                                      self.current_display_image.height, self.current_display_image)
+        arcade.finish_render()
+
+        arcade.schedule(self.finish_display_image, self.display_time)
+
+    def finish_display_image(self, delta_time):
+        """
+        Zakończa wyświetlanie obrazu i wznawia grę.
+        """
+        self.clear()
+        self.on_draw()
+        arcade.unschedule(self.finish_display_image)
 
 
 def main():
