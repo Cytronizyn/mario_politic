@@ -8,7 +8,7 @@ SCREEN_TITLE = "Mario Politic Miros"
 CHARACTER_SCALING = 2
 TILE_SCALING = 1
 PLAYER_MOVEMENT_SPEED = 5
-GRAVITY = 2
+GRAVITY = 1
 PLAYER_JUMP_SPEED = 15
 COIN_SCALING = 1
 
@@ -106,14 +106,17 @@ class MyGame(arcade.Window):
         self.camera.move_to(player_centered)
 
     def on_update(self, delta_time):
+
+
+
         if (self.player_sprite.center_x - self.scene["Walls"][0].center_x > 1024):
             self.scene["Walls"][0].remove_from_sprite_lists()
-        if (self.player_sprite.center_x - self.scene["Walls"][-1].center_x > -1024):
+
+        if (self.player_sprite.center_x - self.scene["Walls"][-1].center_x < -1024):
+            print(self.player_sprite.center_x - self.scene["Walls"][-1].center_x)
+        elif (self.player_sprite.center_x - self.scene["Walls"][-1].center_x > -1024):
             self.MODULE_NUMBER += 1
             map_generator.przeszkoda1(self.MODULE_NUMBER, self, TILE_SCALING)
-        elif (self.player_sprite.center_x - self.scene["Walls"][-1].center_x < -1024):
-            print(self.player_sprite.center_x - self.scene["Walls"][-1].center_x)
-
         self.physics_engine.update()
 
         # Sprawdź kolizje z monetami i zaktualizuj obrazy monet po ich zebraniu
